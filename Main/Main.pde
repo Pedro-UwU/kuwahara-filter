@@ -1,28 +1,32 @@
 PImage img;
 
+int KERNEL_SIDE = 6;
 void settings() {
-  img = loadImage("Images/eldenring.png");
-  size(img.width, img.height * 2);
+  img = loadImage("Images/lion.jpeg");
+  size(img.width, img.height);
 }
 
 
 void setup() {
-  image(img, 0, 0);
-  simpleKuwahara(img, 2);
+  //image(img, 0, 0);
+  PImage result = simpleKuwahara(img, KERNEL_SIDE);
+  image(result, 0, 0);
 }
 
 PImage simpleKuwahara(PImage img, int kernelSide) {
   // kernelSide is used to set the size of the kernel for the filter
   // it is used in the following calculation: kernelSize = 2 * kernelSide + 1
+  PImage result = createImage(img.width, img.height, RGB);
+
 
   for (int i = kernelSide; i < (img.width - kernelSide); i++) {
     for (int j = kernelSide; j < (img.height - kernelSide); j++) {
       color c = computeKuwahara(i, j, kernelSide, img);
-      return null;
+      result.pixels[(j) * result.width + (i)] = c;
     }
   }
 
-  return null;
+  return result;
 }
 
 color computeKuwahara(int i, int j, int kernelSide, PImage img) {
@@ -34,7 +38,6 @@ color computeKuwahara(int i, int j, int kernelSide, PImage img) {
   // For each section, the standard deviation will be computed, using the brightness of the pixels as the parameter
   // The pixel in (i, j) will be the average color of the quadrant with the lowest std
 
-  int kernelLength = 2 * kernelSide + 1;
   int qSide = kernelSide + 1;
   int qSize = int(pow(qSide, 2));
 
@@ -101,25 +104,26 @@ color computeKuwahara(int i, int j, int kernelSide, PImage img) {
   int[] winnerIndices = null;
   color[] winnerQuadrant = null;
   switch (winnerQuadrantNumber) {
-  case 0:
+  case 1:
     winnerQuadrant = q1;
     winnerIndices = q1Ind;
     break;
-  case 1:
+  case 2:
     winnerQuadrant = q2;
     winnerIndices = q2Ind;
     break;
-  case 2:
-    winnerQuadrant = q3;
-    winnerIndices = q2Ind;
-    break;
   case 3:
-    winnerQuadrant = q4;
+    winnerQuadrant = q3;
     winnerIndices = q3Ind;
+    break;
+  case 4:
+    winnerQuadrant = q4;
+    winnerIndices = q4Ind;
     break;
   default:
     throw new RuntimeException("Invalid queadrant number");
   }
+
 
   color[] colorQuadrant = new color[qSize];
   for (int k = 0; k < qSize; k++) {
@@ -127,7 +131,6 @@ color computeKuwahara(int i, int j, int kernelSide, PImage img) {
   }
   
   color finalColor = getAverageColor(colorQuadrant);
-  
   return finalColor;
 }
 
@@ -150,5 +153,5 @@ color getAverageColor(color[] colors) {
      b += blue(c) * blue(c);
    }
    
-   return color(sqrt(r/colors.length), sqrt(g/colors.length),sqrt(b/colors.length));
+   return color(sqrt(r/colors.length), sqrt(g/colors.length), sqrt(b/colors.length));
 }
